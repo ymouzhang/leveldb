@@ -17,7 +17,7 @@ endif(NOT CMAKE_C_STANDARD)
 # C++ standard can be overridden when this is used as a sub-project.
 if(NOT CMAKE_CXX_STANDARD)
   # This project requires C++11.
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif(NOT CMAKE_CXX_STANDARD)
@@ -437,8 +437,10 @@ if(LEVELDB_BUILD_BENCHMARKS)
     endif(NOT HAVE_CXX17_HAS_INCLUDE)
   endfunction(leveldb_benchmark)
 
+  # 在 benchmarks 中用于调试的代码可以放在这里
   if(NOT BUILD_SHARED_LIBS)
     leveldb_benchmark("benchmarks/db_bench.cc")
+    leveldb_benchmark("benchmarks/db_test.cc")
   endif(NOT BUILD_SHARED_LIBS)
 
   check_library_exists(sqlite3 sqlite3_open "" HAVE_SQLITE3)

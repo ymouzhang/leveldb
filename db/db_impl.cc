@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "db/builder.h"
 #include "db/db_iter.h"
@@ -1497,10 +1498,12 @@ DB::~DB() = default;
 Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   *dbptr = nullptr;
 
-  DBImpl* impl = new DBImpl(options, dbname);
+  auto impl = std::unique_ptr<DBImpl>(new DBImpl(options,dbname));
+  // DBImpl* impl = new DBImpl(options, dbname);
   impl->mutex_.Lock();
   VersionEdit edit;
   // Recover handles create_if_missing, error_if_exists
+  // 尝试对 DBImpl 对象进行 Recover 恢复
   bool save_manifest = false;
   Status s = impl->Recover(&edit, &save_manifest);
   if (s.ok() && impl->mem_ == nullptr) {
@@ -1530,9 +1533,10 @@ Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   impl->mutex_.Unlock();
   if (s.ok()) {
     assert(impl->mem_ != nullptr);
-    *dbptr = impl;
+    *dbptr = impl.release();
   } else {
-    delete impl;
+    impl.reset();
+    // delete impl;
   }
   return s;
 }
